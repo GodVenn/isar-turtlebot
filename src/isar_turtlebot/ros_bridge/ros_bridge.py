@@ -2,10 +2,9 @@ import logging
 from abc import ABC
 from logging import Logger
 
-from roslibpy import Ros
-
 from isar_turtlebot.ros_bridge.topic import ImageTopic, Topic
 from isar_turtlebot.settings import settings
+from roslibpy import Ros
 
 
 class RosBridgeInterface(ABC):
@@ -62,16 +61,17 @@ class RosBridge(RosBridgeInterface):
             try:
                 client.run(timeout=connection_timeout)
                 if client.is_connected:
-                    self.logger.info("Successfully connected to ROS.")
+                    self.logger.info(f"Successfully connected to ROS at {host}:{port}.")
                     break
             except Exception as e:
+                msg: str = f"RosBridge failed to connect to ROS at {host}:{port} with message: {e}"
                 self.logger.warning(
-                    f"Try {connection_retries - retries} of {connection_retries}, {e}"
+                    f"{msg} - Attempt {connection_retries - retries} of {connection_retries}"
                 )
 
                 if not retries:
-                    self.logger.error(e)
-                    raise ConnectionError("RosBridge failed to connect to ROS.")
+                    self.logger.error(msg)
+                    raise ConnectionError(msg)
 
         client.run()
 
